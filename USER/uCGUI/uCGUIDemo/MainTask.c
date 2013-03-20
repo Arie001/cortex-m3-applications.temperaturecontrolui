@@ -16,20 +16,21 @@ File        : MainTask.c
 Purpose     : Init GUI & call of GUI-demo
 --------------------END-OF-HEADER-------------------------------------
 */
-
+#include <includes.h>
 #include "GUI.h"
 #include "GUIDEMO.h"
 #include "WM.h"
 extern void GUIDEMO_ShowColorBar(void);
-extern void updateProg(void);
+
 extern int realtime(void);
 extern WM_HWIN CreateWindow(void);  
 void MainTask(void) {
   GUI_Init();
+	//OSInit();
 	CreateWindow();
   while(1) {
 		realtime();
-		updateProg();
+		
 		GUI_Exec();
     //GUIDEMO_main();
 		//GUIDEMO_ShowColorBar();

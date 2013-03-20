@@ -84,9 +84,10 @@ static void uctsk_UCGUI (void)
 
 static void uctsk_RealTime (void)
 {
+		realtime();
 		while(1)
 		{
-			realtime();
+			//realtime();
 		}
 }
 static void uctsk_TouchPanel (void) 

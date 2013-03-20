@@ -170,7 +170,7 @@ int realtime(void)
 		HTTPServer();
 		//GUI_ExecDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
 		WM_ExecIdle();
-		updateProg();
+		//updateProg();
 		
 
 	}
