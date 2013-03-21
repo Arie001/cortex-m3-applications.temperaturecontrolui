@@ -1,58 +1,36 @@
-/******************************************************************
- 
- *****
- *****
- 
- *****  Name: realtime.h                                       
- *****
- 
- *****  Ver.: 1.0                                             
- *****
- 
- *****  Date: 07/05/2001                                      
- *****
- 
- *****  Auth: Andreas Dannenberg                              
- *****
- 
- *****        HTWK Leipzig                                    
- *****
- 
- *****        university of applied sciences                  
- *****
- 
- *****        Germany                                         
- *****
- 
- *****  Func: header-file for easyweb.c                       
- *****
- 
- *****                                                        
- *****
- 
- ******************************************************************/
-
-
+/***************************************************************************
+*	@project 	BRAT - Begineers Researcher ARM Tablet		   *
+* 	@module		Temperature Based Control UI			   *
+*	@auth		Siddharath Kaul					   *
+*	@email		siddharth.kaul.k10@gmail.com | k10blogger@gmail.com*
+*		(c) 2012 Siddharth Kaul and Nandan Mehta		   *
+****************************************************************************
+* @file        	: realtime.c						   *
+* @purpose     	: implements a dynamic HTTP-server by using the easyWEB-API*                        																											*
+* @auth 	: Andreas Dannenberg					   *
+* @note		: Andreas Dannenberg is the original Creator of this file  *
+*		  The file has been adapted to use.			   *
+****************************************************************************/
 #ifndef __EASYWEB_H
 
 #define __EASYWEB_H
 
 
-const unsigned char GetResponse[] =      // 1st thing our server sends to a client
+const unsigned char GetResponse[] =  // 1st thing our server sends to a client
 
 {
-  "HTTP/1.0 200 OK\r\n"                          // protocol ver 1.0, code 200, reason OK
+  "HTTP/1.0 200 OK\r\n"             // protocol ver 1.0, code 200, reason OK
   
-   "Content-Type: text/html\r\n"                  // type of data we want to send
+   "Content-Type: text/html\r\n"     // type of data we want to send
   
-   "\r\n"                                         // indicate end of HTTP-header
+   "\r\n"                            // indicate end of HTTP-header
 
 };
 
 
-/*
- * Prototypes
- */
+/***************************************************************************
+* @description Internal Function Prototypes				   *
+****************************************************************************/
 void InitOsc(void);                              // prototypes
 
 void InitPorts(void);
@@ -78,3 +56,7 @@ unsigned char HTTPStatus;                        // status byte
 
 #endif
 
+/*************************** END FILE ***************************************/
+/****************************************************************************
+@signature Siddharth Kaul
+*****************************************************************************/

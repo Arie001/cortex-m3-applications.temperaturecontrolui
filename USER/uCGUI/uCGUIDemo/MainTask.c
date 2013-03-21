@@ -1,30 +1,35 @@
-/*
-*********************************************************************************************************
-*                                                uC/GUI
-*                        Universal graphic software for embedded applications
-*
-*                       (c) Copyright 2002, Micrium Inc., Weston, FL
-*                       (c) Copyright 2002, SEGGER Microcontroller Systeme GmbH
-*
-*              µC/GUI is protected by international copyright laws. Knowledge of the
-*              source code may not be used to write a similar product. This file may
-*              only be used in accordance with a license and should not be redistributed
-*              in any way. We appreciate your understanding and fairness.
-*
-----------------------------------------------------------------------
-File        : MainTask.c
-Purpose     : Init GUI & call of GUI-demo
---------------------END-OF-HEADER-------------------------------------
-*/
+/**********************************************************************
+*		@project 	BRAT - Begineers Researcher ARM Tablet									*
+* 	@module		Temperature Based Control UI														*
+*		@auth			Siddharath Kaul																					*
+*		@email		siddharth.kaul.k10@gmail.com | k10blogger@gmail.com			*
+*						(c) 2012 Siddharth Kaul and Nandan Mehta									*
+***********************************************************************
+*	@file        : MainTask.c																						*
+* @purpose     : Init GUI & call of Starting Functions								*
+*																																			*
+*																																			*
+***********************************************************************
+* @description Includes all Required Files														*
+***********************************************************************/
 #include <includes.h>
 #include "GUI.h"
 #include "GUIDEMO.h"
 #include "WM.h"
+/**********************************************************************
+* @description External Routines Prototypes 													*
+***********************************************************************/
 extern void GUIDEMO_ShowColorBar(void);
 extern void realtime_Init(void);
 extern int realtime(void);
 extern WM_HWIN CreateWindow(void);
 extern void updateProg(void);
+/**********************************************************************
+* @name				 MainTask																								*
+*	@param 			 None																										*
+*	@return 		 None																										*
+* @description External Routines Declaration													*
+***********************************************************************/
 void MainTask(void) {
   GUI_Init();
 	CreateWindow();
@@ -37,3 +42,7 @@ void MainTask(void) {
 		//GUIDEMO_ShowColorBar();
   }
 }
+/*************************** End of File *******************************/
+/***********************************************************************
+@signature Siddharth Kaul
+************************************************************************/
