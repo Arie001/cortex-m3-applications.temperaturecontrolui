@@ -50,7 +50,7 @@ volatile DWORD TimeTick  = 0;
 /* SysTick interrupt happens every 10 ms */
 
 //static LISTVIEW_Handle _ahListView[1];
-static int             _ButtonSizeX,      _ButtonSizeY;
+
 void SysTick_Handler_realtime (void) {
   TimeTick++;
   if (TimeTick >= 20) {
@@ -92,30 +92,9 @@ void decrement_sensor_value_3()
 }
 
 extern void updateProg(void);
-
-//void main(void)
-int realtime(void)
+void realtime_Init()
 {
-//InitOsc();              // Keil: No oscillator initialization necessary at this time.
-//InitPorts();			  // Keil: No port initialization necessary at this time.
-  //minimize_my_frame();
-  
-  //GUI_Clear();
-  //GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), &_cbDialog, WM_HBKWIN, 0, 0);
-  //GUI_Clear();
-  
-  /*
-  GUI_Clear();
-  GUI_SetBkColor(GUI_BLUE);
-  GUI_SetColor(GUI_LIGHTRED);
-  GUI_Clear();
-  GUI_SetFont(&GUI_Font24B_1);
-  GUI_DispStringAt("Real Time WebPage", 0, 0);
-  GUI_DispStringAt("Created By Siddharth Kaul",0,24);
-  GUI_DispStringAt("and Nandan Mehta", 0, 48);
-  GUI_DispStringAt("Enter 192.168.1.11 in ur web browsser and see the magic", 0, 72);
-  */
-  SystemInit();                                      /* setup core clocks */
+	SystemInit();                                      /* setup core clocks */
   //SysTick_Config(SystemFrequency/100);               /* Generate interrupt every 10 ms */
   SysTick_Config(SystemCoreClock/100);
   SysTick_Handler_realtime ();
@@ -153,14 +132,38 @@ int realtime(void)
 
   TCPLocalPort = TCP_PORT_HTTP;                  // set port we want to listen to
   
+}
+//void main(void)
+int realtime(void)
+{
+//InitOsc();              // Keil: No oscillator initialization necessary at this time.
+//InitPorts();			  // Keil: No port initialization necessary at this time.
+  //minimize_my_frame();
+  
+  //GUI_Clear();
+  //GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), &_cbDialog, WM_HBKWIN, 0, 0);
+  //GUI_Clear();
+  
+  /*
+  GUI_Clear();
+  GUI_SetBkColor(GUI_BLUE);
+  GUI_SetColor(GUI_LIGHTRED);
+  GUI_Clear();
+  GUI_SetFont(&GUI_Font24B_1);
+  GUI_DispStringAt("Real Time WebPage", 0, 0);
+  GUI_DispStringAt("Created By Siddharth Kaul",0,24);
+  GUI_DispStringAt("and Nandan Mehta", 0, 48);
+  GUI_DispStringAt("Enter 192.168.1.11 in ur web browsser and see the magic", 0, 72);
+  */
+  
   	//do
 	//{
 		
 		//GUI_PID_STATE State;
 		//create_ui();
 		//GUI_TOUCH_GetState(&State);
-	while(1)
-	{
+	//while(1)
+	//{
 	 	//key = 0;
 		//CreateWindow();
 		WM_ExecIdle();
@@ -170,10 +173,10 @@ int realtime(void)
 		HTTPServer();
 		//GUI_ExecDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
 		WM_ExecIdle();
-		//updateProg();
+		updateProg();
 		
 
-	}
+	//}
 		
 		
 		//while(key!=GUI_ID_BUTTON0 || key!=GUI_ID_BUTTON1 || key!=GUI_ID_BUTTON2 || key!=GUI_ID_BUTTON3
@@ -202,6 +205,7 @@ int realtime(void)
 		//}
 		
 	//}while(1);//end of do while
+	return 0;
 }
 
 // This function implements a very simple dynamic HTTP-server.
@@ -267,18 +271,62 @@ void HTTPServer(void)
 }
 
 // samples and returns the AD-converter value of channel 2
+/*----------------------------------------------------------------------------
+  initialize ADC Pins
+ *----------------------------------------------------------------------------*/
+#define ADC_VALUE_MAX 0xFFF
+void ADC_Init (void) {
 
-unsigned int GetAD7Val(void)
-{
-// Keil: function replaced to handle LPC1768 A/D converter.
+  LPC_PINCON->PINSEL3 &= ~(3UL<<30);               /* P1.31 is GPIO */
+  LPC_PINCON->PINSEL3 |=  (3UL<<30);               /* P1.31 is AD0.5 */
+
+  LPC_SC->PCONP       |=  (1<<12);               /* Enable power to ADC block */
+
+  LPC_ADC->ADCR        =  (1<< 5) |              /* select AD0.5 pin */
+                          (4<< 8) |              /* ADC clock is 25MHz/5 */
+                          (1<<21);               /* enable ADC */ 
+}
+
+/*----------------------------------------------------------------------------
+  start ADC Conversion
+ *----------------------------------------------------------------------------*/
+void ADC_StartCnv (void) {
+  LPC_ADC->ADCR &= ~(7<<24);                     /* stop conversion  */
+  LPC_ADC->ADCR |=  (1<<24);                     /* start conversion */
+}
+
+
+/*----------------------------------------------------------------------------
+  stop ADC Conversion
+ *----------------------------------------------------------------------------*/
+void ADC_StopCnv (void) {
+  LPC_ADC->ADCR &= ~(7<<24);                     /* stop conversion */
+}
+
+/*----------------------------------------------------------------------------
+  get converted ADC value
+ *----------------------------------------------------------------------------*/
+unsigned int ADC_GetCnv (void) {
+  unsigned int adGdr;
+//  uint32_t adDr2;
+
+  while (!(LPC_ADC->ADGDR & (1UL<<31)));         /* Wait for Conversion end */
+  adGdr = LPC_ADC->ADGDR;
+//  adDr2 = LPC_ADC->ADDR2;
+  return((adGdr >> 4) & ADC_VALUE_MAX);          /* read converted value */
+}
+
+/*------------------------------------------------------------------------------
+  read a converted value from the Analog/Digital converter
+ *------------------------------------------------------------------------------*/
+unsigned int ADC_Get (void) {
   unsigned int val;
 
-  LPC_ADC->ADCR |=  (1<<24);                     /* start conversion */
-  while (!(LPC_ADC->ADGDR & (1UL<<31)));         /* Wait for Conversion end */
-  val = ((LPC_ADC->ADGDR >> 4) & 0xFFF);         /* read converted value */
-  LPC_ADC->ADCR &= ~(7<<24);                     /* stop conversion */
-
-  return(val);                                   /* result of A/D process */ 
+  ADC_StartCnv();                                 /* start A/D conversion */
+  val = ADC_GetCnv();                             /* use upper 8 bits of 12 bit AD conversion */
+  ADC_StopCnv();                                  /* stop A/D conversion */
+	
+  return (val);
 }
 
 // searches the TX-buffer for special strings and replaces them
@@ -306,7 +354,7 @@ void InsertDynamicValues(void)
            {
              for(numinc=0;numinc<10;numinc++)
 						 {
-							 adcvalarray[numinc] = GetAD7Val();
+							 adcvalarray[numinc] = ADC_Get();
 						 }
 						 for(numinc=0;numinc<10;numinc++)
 						 {

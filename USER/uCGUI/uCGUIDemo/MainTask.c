@@ -21,16 +21,17 @@ Purpose     : Init GUI & call of GUI-demo
 #include "GUIDEMO.h"
 #include "WM.h"
 extern void GUIDEMO_ShowColorBar(void);
-
+extern void realtime_Init(void);
 extern int realtime(void);
-extern WM_HWIN CreateWindow(void);  
+extern WM_HWIN CreateWindow(void);
+extern void updateProg(void);
 void MainTask(void) {
   GUI_Init();
-	//OSInit();
 	CreateWindow();
+	realtime_Init();
   while(1) {
 		realtime();
-		
+		//updateProg();
 		GUI_Exec();
     //GUIDEMO_main();
 		//GUIDEMO_ShowColorBar();

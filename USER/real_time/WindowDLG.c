@@ -24,7 +24,7 @@
 #include "DIALOG.h"
 #include "GUI.h"
 #include "PROGBAR.h"
-
+#include "LPC17xx.h"
 #include "LCD_ConfDefaults.h"
 #include <math.h>
 #include <stdlib.h>
@@ -321,6 +321,11 @@ WM_HWIN CreateAbout(void);
 /*
  * @description Window Handler For Main Window
  */
+
+void updateProg(void);
+extern void DoNetworkStuff(void);                                      // handle network and easyWEB-stack
+extern void SysTick_Handler_realtime (void);                                                       // events
+extern void HTTPServer(void);
 static void _cbDialog(WM_MESSAGE * pMsg) {
   WM_HWIN hItem;
   int Id, NCode;
@@ -332,6 +337,10 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     
     hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
 		ahProgBar[0] = hItem;
+		PROGBAR_SetMinMax(ahProgBar[0], 0, 100);
+		PROGBAR_SetBarColor(ahProgBar[0], 0, GUI_RED);
+		PROGBAR_SetBarColor(ahProgBar[0], 1, GUI_GREEN);
+		PROGBAR_SetText(ahProgBar[0], "Temperature");
 		PROGBAR_EnableMemdev(hItem);
 		PROGBAR_SetMinMax(hItem, 0, 100);
 		PROGBAR_SetBarColor(hItem, 0, GUI_GREEN);
@@ -356,6 +365,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				GUI_EndDialog(pMsg->hWin, 0);
 				DrawGraph();
 				CreateWindow();
+				//updateProg();
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -370,6 +380,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				updateProg();
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -385,6 +396,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
 				CreateLan_Settings();
+				updateProg();
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -402,6 +414,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			   */
 				//GUI_CreateDialogBox(_aDialogCreateAbout, GUI_COUNTOF(_aDialogCreateAbout), &_cbDialogAbout, WM_HBKWIN, 34, 0);
 				CreateAbout();
+				updateProg();
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
@@ -416,9 +429,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   // USER START (Optionally insert additional message handling)
   // USER END
   default:
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
-		PROGBAR_SetBarColor(hItem, 0, GUI_GREEN);
-		PROGBAR_SetValue(hItem, adcfinalvalue);
+		updateProg();
     WM_DefaultProc(pMsg);
     break;
   }
@@ -482,13 +493,25 @@ WM_HWIN CreateAbout(void) {
   hWin = GUI_CreateDialogBox(_aDialogCreateAbout, GUI_COUNTOF(_aDialogCreateAbout), &_cbDialogAbout, WM_HBKWIN, 34, 0);
   return hWin;
 }
+
 WM_HWIN CreateWindow(void) {
   WM_HWIN hWin;
 
   hWin = GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), &_cbDialog, WM_HBKWIN, 0, 0);
 	//GUI_ExecDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
-	
+	//GUI_Exec();
 	return hWin;
+}
+extern unsigned int ADC_Get(void);
+unsigned int adc_prog(void)
+{
+		unsigned int val;
+		LPC_ADC->ADCR |=  (1<<24);                     /* start conversion */
+		while (!(LPC_ADC->ADGDR & (1UL<<31)));         /* Wait for Conversion end */
+		val = ((LPC_ADC->ADGDR >> 4) & 0xFFF);         /* read converted value */
+		LPC_ADC->ADCR &= ~(7<<24);                     /* stop conversion */
+
+		return(val);                                   /* result of A/D process */ 
 }
 void updateProg()
 {
@@ -496,6 +519,12 @@ void updateProg()
 		char contString[20] = "Temperature ";
 		//unsigned int adc_value_avg = adcfinalvalue;
 		unsigned int i=0;
+		//Keil: function replaced to handle LPC1768 A/D converter.
+		
+		                   /* stop conversion */
+
+		//return(val);                                   /* result of A/D process */ 
+		
 		//while(adc_value_avg)
 		//{
 		//	temperature[i] = 48 + adc_value_avg%10;
@@ -506,12 +535,16 @@ void updateProg()
 		//Inverting the temperature to correct units place
 		//strrev(temperature);
 		//strcat(contString,(char *)adcfinalvalue);
+		
 		sprintf(temperature, "%4u", adcfinalvalue);
 		strcat(contString, temperature);
 		strcat(contString," oC");
-		PROGBAR_SetBarColor(ahProgBar[0], 0, GUI_RED);
-		PROGBAR_SetBarColor(ahProgBar[0], 1, GUI_GREEN);
+		//PROGBAR_SetMinMax(ahProgBar[0], 0, 100);
+		//PROGBAR_SetBarColor(ahProgBar[0], 0, GUI_RED);
+		//PROGBAR_SetBarColor(ahProgBar[0], 1, GUI_GREEN);
+		PROGBAR_EnableMemdev(ahProgBar[0]);
 		PROGBAR_SetText(ahProgBar[0], contString);
+		
 		PROGBAR_SetValue(ahProgBar[0], adcfinalvalue);
 }
 // USER START (Optionally insert additional public code)
@@ -577,6 +610,7 @@ static void _Label(void) {
     GUI_DrawVLine(xPos, (LCD_YSIZE - 20), (LCD_YSIZE - 14));
     GUI_DispDecAt(x / 40, xPos - 2, (LCD_YSIZE - 9), 1);
   }
+	/*
   for (y = 0; y < YSIZE / 2; y += 20) {
     int yPos = (LCD_YSIZE - 20) - YSIZE / 2 + y;
     GUI_DrawHLine(yPos, 13, 18);
@@ -590,7 +624,22 @@ static void _Label(void) {
     } else {
       GUI_DispCharAt('0', 7, yPos - 4);
     }
-  }
+  }*/
+	//YSIZE 140
+	//LCd_YSIZE 240
+	
+	for(y = 80; y >= -80; y -= 20)
+	{
+			int yPos = (LCD_YSIZE - 20) - YSIZE / 2 + y;
+			GUI_DrawHLine(yPos, 13, 18);
+			GUI_GotoXY(1, yPos - 4);
+			GUI_DispDec((80-y)*10 / 20, 2);
+		
+			
+			
+	}
+			
+	
 }
 
 /*********************************************************************
@@ -653,19 +702,38 @@ static void _DisplayTime(int tDiff) {
  
   
 }
-extern unsigned int GetAD7Val(void);
+extern unsigned int ADC_Get(void);
+unsigned int GetAD7Val(void)
+{
+// Keil: function replaced to handle LPC1768 A/D converter.
+  unsigned int val;
+
+  LPC_ADC->ADCR |=  (1<<24);                     /* start conversion */
+  while (!(LPC_ADC->ADGDR & (1UL<<31)));         /* Wait for Conversion end */
+  val = ((LPC_ADC->ADGDR >> 4) & 0xFFF);         /* read converted value */
+  LPC_ADC->ADCR &= ~(7<<24);                     /* stop conversion */
+
+  return(val);                                   /* result of A/D process */ 
+}
 static void _getTemperatureData(I16 * paY, int n) {
 	
 	unsigned int i = 0;
+	unsigned int adcV ;
 	for(i=0;i<n;i++)
 	{
-		paY[i] = GetAD7Val();
+		//@tried YSIZE + adcV/400 @result no output
+		//@tried adcV/400 @result output at 80 mark
+		//@tried 240 - (adcV/400) @result no output
+		//@tried adcV/40 @result output at 60 mark
+		adcV = GetAD7Val();
+		paY[i] = (adcV/40) + (YSIZE/2);
 	}
 }
 static void _DemoTemperatureGraph(void) {
   PARAM Param;
-  int tDiff, t0, Cnt = 0;
-	unsigned int _exitNum = 0;
+	
+	int samples = 0;
+  unsigned int _exitNum = 0;
   GUI_RECT Rect = {19, (LCD_YSIZE - 20) - YSIZE, (LCD_XSIZE - 2), (LCD_YSIZE - 21)};
   GUI_HMEM hMem = GUI_ALLOC_AllocZero((LCD_XSIZE - 20) * sizeof(I16));
   _ShowText("Temperature vs Time graph");
@@ -675,32 +743,27 @@ static void _DemoTemperatureGraph(void) {
   GUI_DispStringAt("msec/graph:", 10, 50);
   
   _LabelMS();
-  t0 = GUI_GetTime();
-  while(((tDiff = (GUI_GetTime() - t0)) < 10000) ) {
+  
+  while(1) {
     
     GUI_PID_STATE TouchState;
-		int t1, tDiff2;
+		
 		GUI_TOUCH_GetState(&TouchState);
 		if (TouchState.Pressed) {
       _exitNum++;
      
     }
-    _GetRandomData(Param.aY, tDiff, (LCD_XSIZE - 20));
-    t1 = GUI_GetTime();
+		/* NetWork Stuff */
+		/* Graph continue*/
+		
+    _getTemperatureData(Param.aY,LCD_XSIZE - 20); //tDiff);//, (LCD_XSIZE - 20));
     GUI_MEMDEV_Draw(&Rect, _Draw, &Param, 0, GUI_MEMDEV_NOTRANS);
-    tDiff2 = GUI_GetTime() - t1;
-    if (tDiff2 < 100) {
-      GUI_Delay(100 - tDiff2);
-    }
-    if(!((++Cnt)%10)) {
-      _DisplayTime(tDiff2);
-      
-      GUI_GotoXY(80, 50);
-      GUI_SetColor(GUI_WHITE);
-      GUI_SetBkColor(GUI_RED);
-      GUI_DispDecSpace(tDiff2, 3);
-      
-    }
+    _DisplayTime(samples);
+		GUI_GotoXY(80, 50);
+    GUI_SetColor(GUI_WHITE);
+    GUI_SetBkColor(GUI_RED);
+    GUI_DispDecSpace(samples, 3);
+		++samples;
 		if(_exitNum == 3)
 			break;
   }
@@ -714,7 +777,8 @@ static void _DemoSineWave(void) {
   GUI_HMEM hMem = GUI_ALLOC_AllocZero((LCD_XSIZE + 90) * sizeof(I16));
   _ShowText("Sine wave");
   pStart = (I16*)GUI_ALLOC_h2p(hMem);
-  _GetSineData(pStart, LCD_XSIZE + 90);
+	_getTemperatureData(pStart, LCD_XSIZE + 90);
+  //_GetSineData(pStart, LCD_XSIZE + 90);
   /*
   GUI_SetFont(&GUI_Font6x8);
   GUI_DispStringAt("msec/graph:", 10, 50);
@@ -748,13 +812,16 @@ static void _DemoSineWave(void) {
 }
 void DrawGraph()
 {
-	
+	//GUI_CONTEXT ContextOld;
+  //GUI_SaveContext(&ContextOld);
 	GUI_Clear();
 	_Label();
-	_DemoRandomGraph();
+	_DemoTemperatureGraph();
+	//_DemoSineWave();
 	GUI_Clear();
+	//GUI_RestoreContext(&ContextOld);
 	//CreateWindow();
-  
+	
 }
 
 /*************************** End of file ****************************/

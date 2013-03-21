@@ -54,6 +54,7 @@
 #define  APP_TASK_TouchPanel_PRIO		 (				   4)
 #define  APP_TASK_UCGUI_PRIO             (                 5)
 #define  APP_TASK_RealTime_PRIO						(								6)
+#define  APP_TASK_DrawGraph_PRIO						(								7)
 #define  APP_TASK_BLINK_PRIO          	 (OS_LOWEST_PRIO - 4)
 
 
@@ -73,10 +74,11 @@
 */
 
 #define  APP_TASK_UCGUI_STK_SIZE                         512u 
-#define  APP_TASK_BACKLIGHT_STK_SIZE					 128u
-#define  APP_TASK_TouchPanel_STK_SIZE					 256u
+#define  APP_TASK_BACKLIGHT_STK_SIZE					 64u
+#define  APP_TASK_TouchPanel_STK_SIZE					 128u
 #define  APP_TASK_BLINK_STK_SIZE                         128u
 #define  APP_TASK_RealTime_STK_SIZE							256u
+#define  APP_TASK_DrawGraph_STK_SIZE							256u
 
 #define  APP_TASK_START_STK_SIZE                          64u
 #define  APP_TASK_OSVIEW_TERMINAL_STK_SIZE   			 256u
