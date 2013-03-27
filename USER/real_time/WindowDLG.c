@@ -125,6 +125,8 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreateLan[] = {
 * @note For Complete File
 ************************************************************************/
 extern unsigned int GetAD7Val(void);
+extern void UART2_Init (void);
+extern void UART2_SendString (unsigned char *s);
 /***********************************************************************
 * @description Internal Routine Prototypes
 * @note For the Complete File
@@ -380,9 +382,13 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
-				GUI_EndDialog(pMsg->hWin, 0);
+				//WM_DeleteWindow(pMsg->hWin);
+				WM_HideWindow(pMsg->hWin);
+				//GUI_EndDialog(pMsg->hWin, 0);
 				DrawGraph();
-				CreateWindow();
+				WM_ShowWindow(pMsg->hWin);
+				//CreateWindow();
+				//WM_Paint(pMsg->hWin);
 				//updateProg();
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -446,8 +452,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     break;
   // USER START (Optionally insert additional message handling)
   // USER END
+		case WM_PAINT:
+			/************************************************************************
+			 * @note WM_CreateDialogBox or CreateWindow cannot be called in WM_Paint*
+			 ************************************************************************/
+			updateProg();
+		break;
   default:
-		updateProg();
+		
     WM_DefaultProc(pMsg);
     break;
   }
@@ -479,7 +491,7 @@ WM_HWIN CreateAbout(void) {
 WM_HWIN CreateWindow(void) {
   WM_HWIN hWin;
 
-  hWin = GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), &_cbDialog, WM_HBKWIN, 0, 0);
+  hWin = GUI_ExecDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), &_cbDialog, WM_HBKWIN, 0, 0);
 	//GUI_ExecDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
 	//GUI_Exec();
 	return hWin;
@@ -700,6 +712,8 @@ static void _getTemperatureData(I16 * paY, int n) {
 	
 	unsigned int i = 0;
 	unsigned int adcV ;
+					char temp_data[5];
+	UART2_Init();
 	for(i=0;i<n;i++)
 	{
 		/****************************************************
@@ -709,7 +723,13 @@ static void _getTemperatureData(I16 * paY, int n) {
 		 * @tried adcV/40 					@result output at 60 mark
 		 ****************************************************/
 		adcV = GetAD7Val();
-		paY[i] = (adcV/40) + (YSIZE/2);
+		/****************************************************
+		 * @formula paY[i] = (adcV/40) + (YSIZE/2)
+		 ****************************************************/
+		paY[i] = YSIZE - (adcV/400);
+		UART2_SendString("\nData For Graph: ");
+		sprintf(temp_data,"%4u",paY[i]);
+		UART2_SendString(temp_data);
 	}
 }
 /************************************************************************
@@ -752,6 +772,9 @@ static void _DemoTemperatureGraph(void) {
     GUI_SetBkColor(GUI_RED);
     GUI_DispDecSpace(samples, 3);
 		++samples;
+		/*****************************************************************
+		* @note  Never Ever Put GUI_ALLOC_Free(hMem) here inside the loop.
+		******************************************************************/
 		if(_exitNum == 3)
 			break;
   }
@@ -815,6 +838,7 @@ void DrawGraph()
 	_DemoTemperatureGraph();
 	GUI_Clear();
 }
+
 /**************************** End of File ********************************/
 /*************************************************************************
 @signature Siddharth Kaul

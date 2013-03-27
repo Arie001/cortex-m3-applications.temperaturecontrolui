@@ -52,6 +52,8 @@ volatile DWORD TimeTick  = 0;
 extern void TCPClockHandler(void);
 extern void updateProg(void);
 extern void assignfinalvalue(unsigned int value);
+extern void UART2_Init (void);
+extern void UART2_SendString (unsigned char *s);
 /****************************************************************************
 * @description Internal Routine Prototypes																  *
 *****************************************************************************/
@@ -134,7 +136,7 @@ int realtime(void)
 	// events
 	HTTPServer();
 	WM_ExecIdle();
-	updateProg();
+	//updateProg();
 	return 0;
 }
 /****************************************************************************
@@ -232,7 +234,7 @@ void InsertDynamicValues(void)
            char NewKey[5];
   unsigned int i;
 	unsigned int adcvalarray[10],numinc;
-  
+  //UART2_Init();
   if (TCPTxDataCount < 4) return;                     // there can't be any special string
   Key = TCP_TX_BUF;
   for (i = 0; i < (TCPTxDataCount - 3); i++)
@@ -255,6 +257,8 @@ void InsertDynamicValues(void)
 						 adcValue = adcValue/400;  // get AD value
 						 assignfinalvalue(adcValue);
              sprintf(NewKey, "%3u", adcValue);       // insert AD converter value
+						 //UART2_SendString("\nData For Insert Values: ");
+						 //UART2_SendString(NewKey);
              memcpy(Key, NewKey, 3);
 						 *(Key + 3) = ' ';                  
              break;

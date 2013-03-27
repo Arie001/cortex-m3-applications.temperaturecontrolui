@@ -13,6 +13,7 @@
 * @description Includes all Required Files														*
 ***********************************************************************/
 #include <includes.h>
+#include "LPC17xx.h"
 #include "GUI.h"
 #include "GUIDEMO.h"
 #include "WM.h"
@@ -31,7 +32,8 @@ extern void updateProg(void);
 * @description External Routines Declaration													*
 ***********************************************************************/
 void MainTask(void) {
-  GUI_Init();
+  SystemInit();
+	GUI_Init();
 	CreateWindow();
 	realtime_Init();
   while(1) {
