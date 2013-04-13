@@ -79,6 +79,12 @@ unsigned int adcfinalvalue;
 #define ID_EDIT_2 (GUI_ID_USER + 0x22)
 #define ID_BUTTON_5 (GUI_ID_USER + 0x23)
 /*********************************************************************
+* @description Lan Setting Dialog Window Ids
+**********************************************************************/
+#define ID_SLIDER_0 (GUI_ID_USER + 0x24)
+#define ID_PROGBAR_2 (GUI_ID_USER + 0x25)
+#define ID_RADIO_0 (GUI_ID_USER + 0x26)
+/*********************************************************************
 * @description Resource Table
 **********************************************************************/
 /*********************************************************************
@@ -121,10 +127,36 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreateLan[] = {
   { BUTTON_CreateIndirect, "OK", ID_BUTTON_5, 90, 75, 80, 30, 0, 0 },
 };
 /***********************************************************************
+* @description Control Panel Dialog Box Resource Table
+************************************************************************/
+static const GUI_WIDGET_CREATE_INFO _aDialogCreateControl[] = {
+  { FRAMEWIN_CreateIndirect, "ControlWin", ID_FRAMEWIN_0, 0, 0, 320, 240, 0, 0 },
+  { SLIDER_CreateIndirect, "Slider", ID_SLIDER_0, 22, 94, 265, 30, 0, 0 },
+  { PROGBAR_CreateIndirect, "Progbar", ID_PROGBAR_2, 24, 134, 265, 30, 0, 0 },
+  { TEXT_CreateIndirect, "0", ID_TEXT_0, 23, 70, 11, 20, 0, 0 },
+  { TEXT_CreateIndirect, "10", ID_TEXT_1, 46, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "20", ID_TEXT_2, 73, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "30", ID_TEXT_3, 97, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "40", ID_TEXT_4, 121, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "50", ID_TEXT_5, 148, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "60", ID_TEXT_6, 172, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "70", ID_TEXT_2, 197, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "80", ID_TEXT_3, 222, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "90", ID_TEXT_4, 248, 70, 15, 20, 0, 0 },
+  { TEXT_CreateIndirect, "100", ID_TEXT_5, 275, 70, 20, 20, 0, 0 },
+  { RADIO_CreateIndirect, "Radio", ID_RADIO_0, 22, 17, 50, 41, 0, 5122 },
+  { TEXT_CreateIndirect, "Automatic Mode", ID_TEXT_2, 45, 17, 80, 20, 0, 0 },
+  { TEXT_CreateIndirect, "Manual Mode", ID_TEXT_2, 45, 37, 80, 20, 0, 0 },
+  { BUTTON_CreateIndirect, "Done", ID_BUTTON_0, 209, 13, 80, 47, 0, 0 },
+  // USER START (Optionally insert additional widgets)
+  // USER END
+};
+/***********************************************************************
 * @description Extrenal Routine Prototypes
 * @note For Complete File
 ************************************************************************/
 extern unsigned int GetAD7Val(void);
+extern int _ExecKeyboard(void);
 extern void UART2_Init (void);
 extern void UART2_SendString (unsigned char *s);
 /***********************************************************************
@@ -133,6 +165,7 @@ extern void UART2_SendString (unsigned char *s);
 ************************************************************************/
 WM_HWIN CreateLan_Settings(void);
 WM_HWIN CreateAbout(void);
+WM_HWIN CreateControlWin(void);
 WM_HWIN CreateWindow(void);
 void DrawGraph(void);
 void updateProg(void);
@@ -231,6 +264,7 @@ static void _cbDialogLan(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				//_ExecKeyboard();
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -249,6 +283,7 @@ static void _cbDialogLan(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				//_ExecKeyboard();
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -267,6 +302,7 @@ static void _cbDialogLan(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				//_ExecKeyboard();
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -344,6 +380,82 @@ static void _cbDialogAbout(WM_MESSAGE * pMsg) {
   }
 }
 /************************************************************************
+* @description Control Window Dialog Box Callback Functions
+*************************************************************************/
+static void _cbDialogControl(WM_MESSAGE * pMsg) {
+  WM_HWIN hItem;
+  int Id, NCode;
+  // USER START (Optionally insert additional variables)
+  // USER END
+
+  switch (pMsg->MsgId) {
+  case WM_NOTIFY_PARENT:
+    Id    = WM_GetId(pMsg->hWinSrc);
+    NCode = pMsg->Data.v;
+    switch(Id) {
+    case ID_SLIDER_0: // Notifications sent by 'Slider'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_VALUE_CHANGED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_RADIO_0: // Notifications sent by 'Radio'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_VALUE_CHANGED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    case ID_BUTTON_0: // Notifications sent by 'Done'
+      switch(NCode) {
+      case WM_NOTIFICATION_CLICKED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        break;
+      case WM_NOTIFICATION_RELEASED:
+        // USER START (Optionally insert code for reacting on notification message)
+        // USER END
+        GUI_EndDialog(pMsg->hWin, 0);
+				break;
+      // USER START (Optionally insert additional code for further notification handling)
+      // USER END
+      }
+      break;
+    // USER START (Optionally insert additional code for further Ids)
+    // USER END
+    }
+    break;
+  // USER START (Optionally insert additional message handling)
+  // USER END
+  default:
+    WM_DefaultProc(pMsg);
+    break;
+  }
+}
+/************************************************************************
 * @description Main Window Dialog Box Callback Functions
 *************************************************************************/
 static void _cbDialog(WM_MESSAGE * pMsg) {
@@ -404,6 +516,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				WM_HideWindow(pMsg->hWin);
+				CreateControlWin();
+				WM_ShowWindow(pMsg->hWin);
 				updateProg();
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -467,6 +582,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 /************************************************************************
 * @description Create Dialog Boxes Functions
 *************************************************************************/
+/************************************************************************
+* @description Create Control Dialog
+*************************************************************************/
+WM_HWIN CreateControlWin(void) {
+  WM_HWIN hWin;
+
+  hWin = GUI_CreateDialogBox(_aDialogCreateControl, GUI_COUNTOF(_aDialogCreateControl), &_cbDialogControl, WM_HBKWIN, 0, 0);
+  return hWin;
+}
 /************************************************************************
 * @description Create Lan Dialog
 *************************************************************************/
@@ -602,7 +726,7 @@ static void _GetSineData(I16 * paY, int n) {
 *************************************************************************/
 static void _Label(void) {
   int x, y;
-  GUI_SetPenSize(1);
+	GUI_SetPenSize(1);
   GUI_ClearRect(0, (LCD_YSIZE - 21) - YSIZE, (LCD_XSIZE - 1), (LCD_YSIZE - 1));
   GUI_DrawRect(18, (LCD_YSIZE - 21) - YSIZE, (LCD_XSIZE - 1), (LCD_YSIZE - 20));
   GUI_SetFont(&GUI_Font6x8);
@@ -628,13 +752,15 @@ static void _Label(void) {
   }*/
 	//YSIZE 140
 	//LCd_YSIZE 240
-	
-	for(y = 80; y >= -80; y -= 20)
+	/*************************************************
+	** @note This is absolutely correct do not change*
+	**************************************************/
+	for(y = 80; y >= -60; y -= 10)
 	{
-			int yPos = (LCD_YSIZE - 20) - YSIZE / 2 + y;
+			int yPos = (LCD_YSIZE - 20) - YSIZE / 2 + y - 10;
 			GUI_DrawHLine(yPos, 13, 18);
 			GUI_GotoXY(1, yPos - 4);
-			GUI_DispDec((80-y)*10 / 20, 2);
+			GUI_DispDec((80-y)*10 / 10, 2);
 	}
 }
 /************************************************************************
@@ -712,7 +838,7 @@ static void _getTemperatureData(I16 * paY, int n) {
 	
 	unsigned int i = 0;
 	unsigned int adcV ;
-					char temp_data[5];
+	unsigned char temp_data[5];
 	UART2_Init();
 	for(i=0;i<n;i++)
 	{
@@ -726,9 +852,13 @@ static void _getTemperatureData(I16 * paY, int n) {
 		/****************************************************
 		 * @formula paY[i] = (adcV/40) + (YSIZE/2)
 		 ****************************************************/
-		paY[i] = YSIZE - (adcV/400);
+		UART2_SendString("\nADC Value: ");
+		sprintf(temp_data, "%3u",adcV);
+		UART2_SendString(temp_data);
+		paY[i] = YSIZE - (adcV/20) ;
+		// 30 is correction factor
 		UART2_SendString("\nData For Graph: ");
-		sprintf(temp_data,"%4u",paY[i]);
+		sprintf(temp_data,"%3u",paY[i]);
 		UART2_SendString(temp_data);
 	}
 }
@@ -741,7 +871,7 @@ static void _DemoTemperatureGraph(void) {
   PARAM Param;
 	
 	int samples = 0;
-  unsigned int _exitNum = 0;
+  //unsigned int _exitNum = 0;
   GUI_RECT Rect = {19, (LCD_YSIZE - 20) - YSIZE, (LCD_XSIZE - 2), (LCD_YSIZE - 21)};
   GUI_HMEM hMem = GUI_ALLOC_AllocZero((LCD_XSIZE - 20) * sizeof(I16));
   _ShowText("Temperature vs Time graph");
@@ -758,7 +888,8 @@ static void _DemoTemperatureGraph(void) {
 		
 		GUI_TOUCH_GetState(&TouchState);
 		if (TouchState.Pressed) {
-      _exitNum++;
+      //_exitNum++;
+			break;
      
     }
 		/* NetWork Stuff */
@@ -775,8 +906,8 @@ static void _DemoTemperatureGraph(void) {
 		/*****************************************************************
 		* @note  Never Ever Put GUI_ALLOC_Free(hMem) here inside the loop.
 		******************************************************************/
-		if(_exitNum == 3)
-			break;
+		//if(_exitNum == 3)
+			//break;
   }
   GUI_ALLOC_Free(hMem);
 }

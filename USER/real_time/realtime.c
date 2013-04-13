@@ -136,7 +136,7 @@ int realtime(void)
 	// events
 	HTTPServer();
 	WM_ExecIdle();
-	//updateProg();
+	updateProg();
 	return 0;
 }
 /****************************************************************************
@@ -254,7 +254,10 @@ void InsertDynamicValues(void)
 						 {
 							 adcValue = adcValue + adcvalarray[i];
 						 }
-						 adcValue = adcValue/400;  // get AD value
+						 adcValue = adcValue/100;  // get AD value
+						 //Divide by 2 see notes
+						 adcValue = (adcValue*3300)/4096;
+						 adcValue = adcValue - 10;
 						 assignfinalvalue(adcValue);
              sprintf(NewKey, "%3u", adcValue);       // insert AD converter value
 						 //UART2_SendString("\nData For Insert Values: ");

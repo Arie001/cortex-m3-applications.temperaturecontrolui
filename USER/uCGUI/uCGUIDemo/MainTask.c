@@ -25,6 +25,7 @@ extern void realtime_Init(void);
 extern int realtime(void);
 extern WM_HWIN CreateWindow(void);
 extern void updateProg(void);
+extern void UART2_Init (void);
 /**********************************************************************
 * @name				 MainTask																								*
 *	@param 			 None																										*
@@ -34,6 +35,7 @@ extern void updateProg(void);
 void MainTask(void) {
   SystemInit();
 	GUI_Init();
+	UART2_Init();
 	CreateWindow();
 	realtime_Init();
   while(1) {

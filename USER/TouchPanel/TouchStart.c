@@ -49,6 +49,7 @@ void _TestCalibration(void);
 void _ExecCalibration(void);
 static void _Calibrate(int Coord, int Log0, int Log1, int Phys0, int Phys1, int *p0, int *p1);
 static int _Log2Phys(int l, I32 l0, I32 l1, I32 p0, I32 p1);
+int _ExecKeyboard(void);
 /**********************************************************************
 * @description External Routine Prototype															*
 ***********************************************************************/
