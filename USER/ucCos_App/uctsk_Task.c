@@ -16,18 +16,18 @@
 /**********************************************************************
 * @description Private variables 																			*
 ***********************************************************************/
-static  OS_STK  App_Task_UCGUI_Stk       [APP_TASK_UCGUI_STK_SIZE];
-static  OS_STK  App_Task_TouchPanel_Stk  [APP_TASK_TouchPanel_STK_SIZE];
-static  OS_STK  App_Task_RealTime_Stk    [APP_TASK_RealTime_STK_SIZE];
-static  OS_STK	App_Task_DrawGraph_Stk 	 [APP_TASK_DrawGraph_STK_SIZE]; 
+static  OS_STK  App_Task_UCGUI_Stk         [APP_TASK_UCGUI_STK_SIZE];
+static  OS_STK  App_Task_TouchPanel_Stk    [APP_TASK_TouchPanel_STK_SIZE];
+static  OS_STK  App_Task_RealTime_Stk      [APP_TASK_RealTime_STK_SIZE];
+static  OS_STK	App_Task_DrawGraph_Stk 	   [APP_TASK_DrawGraph_STK_SIZE];
 /**********************************************************************
 * @description Internal Function Prototype														*
 ***********************************************************************/
-       void MainTask         (void);
-static void uctsk_UCGUI      (void);
-static void uctsk_TouchPanel (void);
-static void uctsk_RealTime	 (void);
-static void uctsk_DrawGraph  (void);
+       void MainTask         		(void);
+static void uctsk_UCGUI      		(void);
+static void uctsk_TouchPanel 		(void);
+static void uctsk_RealTime	 		(void);
+static void uctsk_DrawGraph  		(void);
 /**********************************************************************
 * @description External Routine Prototype															*
 ***********************************************************************/
@@ -84,7 +84,8 @@ void App_UCGUI_TaskCreate(void)
   (INT8U           ) APP_TASK_DrawGraph_PRIO  );
 	#if OS_TASK_NAME_EN > 0
     	OSTaskNameSet(APP_TASK_RealTime_PRIO, "TASK DrawGraph", &os_err);
-	#endif 
+	#endif
+	
 }							 
 /**********************************************************************
 * @name 				uctsk_UCGUI																						*

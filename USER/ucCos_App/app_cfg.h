@@ -53,7 +53,6 @@
 #define  APP_TASK_BLINK_STK_SIZE             128u
 #define  APP_TASK_RealTime_STK_SIZE				 	 256u
 #define  APP_TASK_DrawGraph_STK_SIZE				 256u
-
 #define  APP_TASK_START_STK_SIZE              64u
 #define  APP_TASK_OSVIEW_TERMINAL_STK_SIZE	 256u
 #define  OS_VIEW_TASK_STK_SIZE               256u

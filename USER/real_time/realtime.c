@@ -252,12 +252,13 @@ void InsertDynamicValues(void)
 						 }
 						 for(numinc=0;numinc<10;numinc++)
 						 {
-							 adcValue = adcValue + adcvalarray[i];
+							 adcValue = adcValue + adcvalarray[numinc];
 						 }
-						 adcValue = adcValue/100;  // get AD value
+						 adcValue = adcValue/10;  // get AD value
 						 //Divide by 2 see notes
 						 adcValue = (adcValue*3300)/4096;
-						 adcValue = adcValue - 10;
+						 //adcValue = (adcValue/10) + 17;
+						 adcValue = adcValue/10;
 						 assignfinalvalue(adcValue);
              sprintf(NewKey, "%3u", adcValue);       // insert AD converter value
 						 //UART2_SendString("\nData For Insert Values: ");

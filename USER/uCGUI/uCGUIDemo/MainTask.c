@@ -18,6 +18,10 @@
 #include "GUIDEMO.h"
 #include "WM.h"
 /**********************************************************************
+* @description Internal Routines Prototypes 													*
+***********************************************************************/
+void controlOutput(void);
+/**********************************************************************
 * @description External Routines Prototypes 													*
 ***********************************************************************/
 extern void GUIDEMO_ShowColorBar(void);
@@ -26,6 +30,10 @@ extern int realtime(void);
 extern WM_HWIN CreateWindow(void);
 extern void updateProg(void);
 extern void UART2_Init (void);
+extern unsigned int GetAD7Val(void);
+extern void setDAC(uint16_t value);
+extern void DACInit(void);
+extern void UART2_SendString (unsigned char *s);
 /**********************************************************************
 * @name				 MainTask																								*
 *	@param 			 None																										*
@@ -36,16 +44,21 @@ void MainTask(void) {
   SystemInit();
 	GUI_Init();
 	UART2_Init();
+	DACInit();
 	CreateWindow();
 	realtime_Init();
   while(1) {
+		UART2_SendString ("Entered MainTask");
+		updateProg();
 		realtime();
-		//updateProg();
-		GUI_Exec();
+			
+		WM_ExecIdle();
+		//GUI_Exec();
     //GUIDEMO_main();
 		//GUIDEMO_ShowColorBar();
   }
 }
+
 /*************************** End of File *******************************/
 /***********************************************************************
 @signature Siddharth Kaul

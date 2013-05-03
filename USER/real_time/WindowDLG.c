@@ -30,6 +30,7 @@
 #include "DIALOG.h"
 #include "GUI.h"
 #include "PROGBAR.h"
+#include "SLIDER.h"
 #include "LPC17xx.h"
 #include "LCD_ConfDefaults.h"
 #include <math.h>
@@ -44,7 +45,9 @@
 **********************************************************************
 */
 static PROGBAR_Handle ahProgBar[2];
+static SLIDER_Handle ahSlider;
 unsigned int adcfinalvalue;
+static unsigned int choice_a_m=0;
 /*********************************************************************
 * @description Main Dialog Ids
 **********************************************************************/
@@ -79,11 +82,12 @@ unsigned int adcfinalvalue;
 #define ID_EDIT_2 (GUI_ID_USER + 0x22)
 #define ID_BUTTON_5 (GUI_ID_USER + 0x23)
 /*********************************************************************
-* @description Lan Setting Dialog Window Ids
+* @description Control Dialog Window Ids
 **********************************************************************/
 #define ID_SLIDER_0 (GUI_ID_USER + 0x24)
 #define ID_PROGBAR_2 (GUI_ID_USER + 0x25)
 #define ID_RADIO_0 (GUI_ID_USER + 0x26)
+#define ID_BUTTON_6 (GUI_ID_USER + 0x27)
 /*********************************************************************
 * @description Resource Table
 **********************************************************************/
@@ -147,7 +151,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreateControl[] = {
   { RADIO_CreateIndirect, "Radio", ID_RADIO_0, 22, 17, 50, 41, 0, 5122 },
   { TEXT_CreateIndirect, "Automatic Mode", ID_TEXT_2, 45, 17, 80, 20, 0, 0 },
   { TEXT_CreateIndirect, "Manual Mode", ID_TEXT_2, 45, 37, 80, 20, 0, 0 },
-  { BUTTON_CreateIndirect, "Done", ID_BUTTON_0, 209, 13, 80, 47, 0, 0 },
+  { BUTTON_CreateIndirect, "Done", ID_BUTTON_6, 209, 13, 80, 47, 0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -159,6 +163,8 @@ extern unsigned int GetAD7Val(void);
 extern int _ExecKeyboard(void);
 extern void UART2_Init (void);
 extern void UART2_SendString (unsigned char *s);
+extern void setDAC( uint16_t value );
+extern void controlOutput(uint16_t value);
 /***********************************************************************
 * @description Internal Routine Prototypes
 * @note For the Complete File
@@ -385,10 +391,16 @@ static void _cbDialogAbout(WM_MESSAGE * pMsg) {
 static void _cbDialogControl(WM_MESSAGE * pMsg) {
   WM_HWIN hItem;
   int Id, NCode;
+	
   // USER START (Optionally insert additional variables)
   // USER END
-
+	
   switch (pMsg->MsgId) {
+		case WM_INIT_DIALOG:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
+				ahSlider = hItem;
+				SLIDER_SetRange(hItem,0,1024);
+		break;
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
     NCode = pMsg->Data.v;
@@ -398,6 +410,7 @@ static void _cbDialogControl(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -406,6 +419,13 @@ static void _cbDialogControl(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_EDIT_0);
+				if(choice_a_m == 1)
+				{				
+					SLIDER_SetValue(hItem,0);
+					controlOutput(SLIDER_GetValue(hItem));	
+					
+				}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -424,12 +444,14 @@ static void _cbDialogControl(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_RADIO_0);
+				choice_a_m = RADIO_GetValue(hItem);
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
       }
       break;
-    case ID_BUTTON_0: // Notifications sent by 'Done'
+    case ID_BUTTON_6: // Notifications sent by 'Done'
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -477,6 +499,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		PROGBAR_SetMinMax(hItem, 0, 100);
 		PROGBAR_SetBarColor(hItem, 0, GUI_GREEN);
 		PROGBAR_SetValue(hItem, adcfinalvalue);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_1);
+		ahProgBar[1] = hItem;
+		PROGBAR_SetMinMax(ahProgBar[1], 0, 100);
+		PROGBAR_SetBarColor(ahProgBar[1], 1, GUI_RED);
+		PROGBAR_SetBarColor(ahProgBar[1], 0, GUI_GREEN);
+		PROGBAR_SetText(ahProgBar[1], "Valve Open");
+		PROGBAR_EnableMemdev(hItem);
+		
     // USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -571,7 +601,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			/************************************************************************
 			 * @note WM_CreateDialogBox or CreateWindow cannot be called in WM_Paint*
 			 ************************************************************************/
-			updateProg();
+			//updateProg();
 		break;
   default:
 		
@@ -630,21 +660,74 @@ void assignfinalvalue(unsigned int value)
 /************************************************************************
 * @description Updates Progress Bar
 *************************************************************************/
+unsigned int getValveValue(unsigned int value)
+{
+	if(value<=20)
+	{		return 310;	}
+	else if(value>20 && value<30)
+	{
+		value = value - 20;
+		return (310+(value*105));
+	}
+	else if(value>=30 && value<=45)
+	{		return 620;	}
+	else if(value>45 && value<55)
+	{
+		value = value - 45;
+		return 620+(value*105);
+	}
+	else 
+	{		return 930;	}
+	
+}
+unsigned int convPerc(unsigned int value)
+{
+	return (value*100/1024);
+}
 void updateProg()
 {
-		char temperature[4];
-		char contString[20] = "Temperature ";
-		//unsigned int adc_value_avg = adcfinalvalue;
-		unsigned int i=0;
-		sprintf(temperature, "%4u", adcfinalvalue);
-		strcat(contString, temperature);
-		strcat(contString," oC");
+	char temperature[4];
+	char contString[20] = "Temperature ";
+	//unsigned int adc_value_avg = adcfinalvalue;
+	unsigned int i=0;
+	unsigned int adcArrayValue[10];
+	float adcValue = 0;
+	for(i=0;i<20;i++)
+	{
+		adcArrayValue[i] = GetAD7Val();
+	}
+	for(i=0;i<20;i++)
+	{
+		adcValue = adcValue + adcArrayValue[i];
+	}
+	adcValue = adcValue/20;
+	//adcValue = GetAD7Val();  // get AD value
+	adcValue = (adcValue*3300)/4096;
+	adcValue = (adcValue/10);
+	//adcValue = adcValue + 4;
+	sprintf(temperature, "%4.2f", adcValue);
+	strcpy(contString,"Temperature");
+	strcat(contString, temperature);
+	strcat(contString," oC");
 		//PROGBAR_SetMinMax(ahProgBar[0], 0, 100);
 		PROGBAR_SetBarColor(ahProgBar[0], 0, GUI_RED);
 		PROGBAR_SetBarColor(ahProgBar[0], 1, GUI_GREEN);
 		PROGBAR_EnableMemdev(ahProgBar[0]);
 		PROGBAR_SetText(ahProgBar[0], contString);
-		PROGBAR_SetValue(ahProgBar[0], adcfinalvalue);
+		PROGBAR_SetValue(ahProgBar[0], adcValue);
+	controlOutput(adcValue);
+	strcpy(contString,"Valve Open");
+	sprintf(temperature, "%4u", convPerc(getValveValue(adcValue)));
+	strcat(contString, temperature);
+	strcat(contString," %");
+		//PROGBAR_SetMinMax(ahProgBar[0], 0, 100);
+		PROGBAR_SetBarColor(ahProgBar[1], 1, GUI_RED);
+		PROGBAR_SetBarColor(ahProgBar[1], 0, GUI_GREEN);
+		PROGBAR_EnableMemdev(ahProgBar[1]);
+		PROGBAR_SetText(ahProgBar[1], contString);
+		PROGBAR_SetValue(ahProgBar[1], convPerc(getValveValue(adcValue)));
+	
+	
 }
 /************************************************************************
 * @description The Second Part of Code Contains Graph Routines
